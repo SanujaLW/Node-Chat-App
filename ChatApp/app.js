@@ -54,6 +54,17 @@ io.on("connection", function(socket) {
     chatRoom.addUser(new User(name, email, socket));
     socket.emit("joined");
   });
+  socket.on("disconnect", function() {
+    chatRoom.removerUser(chatRoom.getUserBySocket(socket));
+  });
+  socket.on("out-message", function(msg) {
+    let sentBy = chatRoom.getUserBySocket(socket);
+    chatRoom.users.forEach(u => {
+      if (u != sentBy) {
+        u.socket.emit("in-message", sentBy.name, msg);
+      }
+    });
+  });
 });
 
 server.listen("3030", () => {
@@ -81,14 +92,20 @@ class ChatRoom {
   }
 
   getUserByName(name) {
-    for (user of this.users) {
+    for (let user of this.users) {
       if (user.name === name) return user;
     }
   }
 
   getUserByEmail(email) {
-    for (user of this.users) {
+    for (let user of this.users) {
       if (user.email === email) return user;
+    }
+  }
+
+  getUserBySocket(socket) {
+    for (let user of this.users) {
+      if (user.socket === socket) return user;
     }
   }
 }
