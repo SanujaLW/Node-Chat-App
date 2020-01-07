@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="styles/css/styles.css" />
+    <title>Node.js Chat App</title>
+  </head>
+  <body>
+    <header></header>
+    <main>
+      <div class="container-fluid px-0 main-wrapper">
+        <div class="d-flex flex-column align-items-center login-wrapper">
+          <form class="d-flex flex-column frm-login">
+            <input
+              class="form-control"
+              type="email"
+              placeholder="Email"
+              id="email"
+              required
+            />
+            <input
+              class="form-control"
+              type="password"
+              placeholder="Password"
+              id="password"
+              required
+            />
+            <button type="submit" class="btn btn-primary flex-fill">
+              Login
+            </button>
+            <a
+              class="align-self-center"
+              href=""
+              data-toggle="modal"
+              data-target="#signUpModal"
+              >Don't have an account?</a
+            >
+          </form>
+        </div>
+
+        <div
+          class="modal fade sign-up"
+          tabindex="-1"
+          role="dialog"
+          aria-labelledby="exampleModalLabel"
+          aria-hidden="true"
+          id="signUpModal"
+        >
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Create an account</h5>
+                <button
+                  type="button"
+                  class="close"
+                  data-dismiss="modal"
+                  aria-label="Close"
+                >
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <div class="sign-up-wrapper">
+                  <form class="frm-sign-up" action="" method="POST">
+                    <input
+                      class="form-control"
+                      type="text"
+                      name="name"
+                      placeholder="Name"
+                      required
+                    />
+                    <input
+                      class="form-control"
+                      type="email"
+                      name="email"
+                      placeholder="Email"
+                      required
+                    />
+                    <input
+                      class="form-control"
+                      type="password"
+                      name="password"
+                      placeholder="Password"
+                      id="signUpPassword"
+                      required
+                    />
+                    <input
+                      class="form-control"
+                      type="password"
+                      placeholder="Retype password"
+                      required
+                      oninput="confirmPass(this)"
+                    />
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal"> Close</button>
+                    <button type="submit" class="btn btn-primary">Create</button>
+                  </form>
+                </div>
+              </div>
+          </div>
+        </div>
+      </div>
+    </main>
+    <footer></footer>
+    <script
+      src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+      integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+      integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+      integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+    <script src="script/script.js"></script>
+  </body>
+</html>
