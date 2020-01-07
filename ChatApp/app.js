@@ -81,7 +81,9 @@ class User {
 }
 
 class ChatRoom {
-  users = [];
+  constructor() {
+    this.users = [];
+  }
 
   addUser(user) {
     this.users.push(user);

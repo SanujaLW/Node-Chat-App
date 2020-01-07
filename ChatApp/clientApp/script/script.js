@@ -6,8 +6,8 @@ $(document).ready(function() {
   });
 
   socket.on("in-message", function(name, msg) {
-    $(".chat-room").append(
-      "<p class='align-self-start'>" + name + ": " + msg + "</p>"
+    $(".conversation").append(
+      "<p class='message-in'>" + name + ": " + msg + "</p>"
     );
   });
 
@@ -21,8 +21,8 @@ $(document).ready(function() {
     let msg = $("#txt-msg").val();
     if (msg.length > 0) {
       socket.emit("out-message", msg);
-      $(".chat-room").append(
-        "<p class='align-self-end'>me" + ": " + msg + "</p>"
+      $(".conversation").append(
+        "<p class='message-out'>me" + ": " + msg + "</p>"
       );
     }
   });
