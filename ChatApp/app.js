@@ -4,6 +4,13 @@ var app = express();
 app.use(express.static("clientApp"));
 
 app.use(require("./app-routing.js"));
+
+var auth = require("./auth.js");
+app.use(auth.ExpressSession);
+app.use(auth.PassportInit);
+app.use(auth.PassportSession);
+app.use(auth.AuthRoutes);
+
 var server = require("http").createServer(app);
 var io = require("socket.io")(server);
 var db = require("./model/orm.js");
