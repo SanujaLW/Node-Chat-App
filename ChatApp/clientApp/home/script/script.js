@@ -1,20 +1,14 @@
 $(document).ready(function() {
-  var socket = io();
-
-  socket.on("joined", function() {
-    $(".message-box > *").prop("disabled", false);
+  jQuery.get("/get-user").then(user => {
+    $(".username").html(user);
   });
+
+  var socket = io();
 
   socket.on("in-message", function(name, msg) {
     $(".conversation").append(
       "<p class='message-in'>" + name + ": " + msg + "</p>"
     );
-  });
-
-  $(".frm-join").submit(function(event) {
-    event.preventDefault();
-    socket.emit("join", $("#name").val(), $("#email").val());
-    return false;
   });
 
   $("#btn-send").click(function(event) {

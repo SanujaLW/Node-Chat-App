@@ -20,11 +20,6 @@ class ORM {
           type: this.Sequelize.STRING(320),
           allowNull: false,
           comment: "user email"
-        },
-        auth: {
-          type: this.Sequelize.STRING(),
-          allowNull: false,
-          comment: "user authentication"
         }
       })
     };
@@ -46,64 +41,47 @@ class ORM {
       });
   }
 
-  addRecord(model, data, additional, callback) {
+  async addRecord(model, data, additional) {
     for (let prop in additional) {
       data[prop] = additional[prop];
     }
-
-    model
-      .build(data)
-      .save()
-      .then(() => {
-        callback("ok");
-      })
-      .catch(err => {
-        callback(err);
-      });
+    try {
+      return await model.build(data).save();
+    } catch (ex) {
+      throw ex;
+    }
   }
 
-  findAll(model, callback) {
-    model
-      .findAll({ raw: true })
-      .then(list => {
-        callback(list);
-      })
-      .catch(err => {
-        callback(err);
-      });
+  async findAll(model, callback) {
+    try {
+      return await model.findAll({ raw: true });
+    } catch (ex) {
+      throw ex;
+    }
   }
 
-  search(model, filters, callback) {
-    model
-      .findAll({ raw: true, where: filters })
-      .then(result => {
-        callback(result);
-      })
-      .catch(err => {
-        callback(err);
-      });
+  async search(model, filters) {
+    try {
+      return model.findAll({ raw: true, where: filters });
+    } catch (ex) {
+      throw ex;
+    }
   }
 
-  update(model, filters, newData, callback) {
-    model
-      .update(newData, { where: filters })
-      .then(result => {
-        callback(result);
-      })
-      .catch(err => {
-        callback(err);
-      });
+  async update(model, filters, newData, callback) {
+    try {
+      return await model.update(newData, { where: filters });
+    } catch (ex) {
+      throw ex;
+    }
   }
 
-  delete(model, filters, callback) {
-    model
-      .destroy({ where: filters })
-      .then(result => {
-        callback(result);
-      })
-      .catch(err => {
-        callback(err);
-      });
+  async delete(model, filters, callback) {
+    try {
+      return await model.destroy({ where: filters });
+    } catch (ex) {
+      throw ex;
+    }
   }
 
   shutdown() {

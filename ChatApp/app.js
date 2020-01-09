@@ -1,44 +1,27 @@
 var express = require("express");
 var app = express();
+var db = require("./model/orm.js");
+db.initiate();
 
 app.use(express.static("clientApp"));
 
-app.use(require("./app-routing.js"));
-
-var auth = require("./auth.js");
-app.use(auth.ExpressSession);
-app.use(auth.PassportInit);
-app.use(auth.PassportSession);
+var auth = require("./auth.js")(db);
+var bodyPasser = require("body-parser");
+app.use(require("express-session")(auth.Session));
+app.use(bodyPasser.json());
+app.use(bodyPasser.urlencoded({ extended: false }));
+app.use(auth.Passport.initialize());
+app.use(auth.Passport.session());
+app.use(require("./app-routing.js")(auth.AuthGuard));
 app.use(auth.AuthRoutes);
 
 var server = require("http").createServer(app);
-var io = require("socket.io")(server);
-var db = require("./model/orm.js");
+var io = require("./socket.js")(server);
 
 var User = require("./model/user.js");
 var ChatRoom = require("./model/chat-room.js");
 var chatRoom;
 
 server.listen("3030", () => {
-  chatRoom = new ChatRoom();
   console.log("Chat server started at 3030");
-  db.initiate();
-});
-
-io.on("connection", function(socket) {
-  socket.on("join", function(firstName, lastName, email) {
-    chatRoom.addUser(new User(firstName, lastName, email, socket));
-    socket.emit("joined");
-  });
-  socket.on("disconnect", function() {
-    chatRoom.removerUser(chatRoom.getUserBySocket(socket));
-  });
-  socket.on("out-message", function(msg) {
-    let sentBy = chatRoom.getUserBySocket(socket);
-    chatRoom.users.forEach(u => {
-      if (u != sentBy) {
-        u.socket.emit("in-message", sentBy.name, msg);
-      }
-    });
-  });
 });
