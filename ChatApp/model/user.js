@@ -1,25 +1,18 @@
 class User {
-  constructor(firstName, lastName, email, socket) {
-    this.lastName = lastName;
-    this.firstName = firstName;
-    this.name = firstName + " " + lastName;
-    this.email = email;
+  constructor(chatUser, auth, socket) {
+    this.chatUser = chatUser;
+    this.name = chatUser.firstName + " " + chatUser.lastName;
+    this.auth = auth;
     this.socket = socket;
   }
 
   getResource() {
     return {
-      firstName: this.firstName,
-      lastName: this.lastName,
-      email: this.email
+      firstName: this.chatUser.firstName,
+      lastName: this.chatUser.lastName,
+      name: this.name,
+      email: this.chatUser.email
     };
-  }
-
-  setFromResource(data) {
-    this.lastName = data[lastName];
-    this.firstName = data[firstName];
-    this.name = firstName + " " + lastName;
-    this.email = data[email];
   }
 }
 

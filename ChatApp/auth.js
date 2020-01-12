@@ -1,4 +1,4 @@
-function getAuth(db) {
+function getAuth(orm, chatRoom, User) {
   var passport = require("passport");
   var Auth0Strategy = require("passport-auth0");
   var router = require("express").Router();
@@ -11,30 +11,33 @@ function getAuth(db) {
     saveUninitialized: false
   };
 
-  var strategy = new Auth0Strategy(
-    {
+  var strategy = new Auth0Strategy({
       domain: process.env.AUTH0_DOMAIN,
       clientID: process.env.AUTH0_CLIENT_ID,
       clientSecret: process.env.AUTH0_CLIENT_SECRET,
       callbackURL: "http://localhost:3030/authCallBack"
     },
-    async function(accessToken, refreshToken, extraParams, profile, done) {
+    async function (accessToken, refreshToken, extraParams, profile, done) {
       try {
-        let result = await db.search(db.schema.ChatUser, {
+        let loggedUser;
+        let result = await new orm.schema.ChatUser({
           email: profile._json.email
+        }).fetch({
+          require: false
         });
-        if (result.length == 0) {
-          await db.addRecord(
-            db.schema.ChatUser,
-            {
-              firstName: profile._json.given_name,
-              lastName: profile._json.family_name,
-              email: profile._json.email
-            },
-            {}
-          );
+        if (result == null) {
+          loggedUser = await new orm.schema.ChatUser({
+            firstName: profile._json.given_name,
+            lastName: profile._json.family_name,
+            email: profile._json.email
+          }).save();
           console.log("Added new user with email " + profile._json.email);
+        } else {
+          loggedUser = result;
         }
+
+        profile.loggedUser = loggedUser;
+
       } catch (err) {
         return done(err, profile);
       }
@@ -44,15 +47,15 @@ function getAuth(db) {
 
   passport.use(strategy);
 
-  passport.serializeUser(function(user, done) {
-    done(null, user.displayName);
+  passport.serializeUser(function (user, done) {
+    done(null, user.loggedUser);
   });
 
-  passport.deserializeUser(function(id, done) {
-    done(null, id);
+  passport.deserializeUser(function (user, done) {
+    done(null, user);
   });
 
-  var authGuard = function(req, res, next) {
+  var authGuard = function (req, res, next) {
     if (req.user) {
       return next();
     }
@@ -92,7 +95,8 @@ function getAuth(db) {
       req.logout();
       res.redirect("/");
     })
-    .get("/get-user", authGuard, function(req, res) {
+    .get("/get-user", authGuard, function (req, res) {
+      chatRoom.addUser(new User(req.user, req.sessionID), null);
       res.json(req.user);
     });
 

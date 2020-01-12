@@ -1,121 +1,138 @@
 class ORM {
   constructor() {
-    let path = "mysql://hx0PbWTsGR:2rP1JveNmZ@remotemysql.com:3306/hx0PbWTsGR";
-    this.Sequelize = require("sequelize");
-    this.sequelize = new this.Sequelize(path);
+    this.knex = require("knex")({
+      client: "mysql",
+      connection: "mysql://hx0PbWTsGR:2rP1JveNmZ@remotemysql.com:3306/hx0PbWTsGR"
+    });
+
+    this.bookshelf = require("bookshelf")(this.knex);
 
     this.schema = {
-      ChatUser: this.sequelize.define("ChatUser", {
-        firstName: {
-          type: this.Sequelize.STRING(100),
-          allowNull: false,
-          comment: "user first name"
+      ChatUser: this.bookshelf.model("ChatUser", {
+        tableName: "ChatUser",
+        threads() {
+          return this.belongsToMany("ChatThread").through("ThreadUser");
         },
-        lastName: {
-          type: this.Sequelize.STRING(100),
-          allowNull: false,
-          comment: "user last name"
+        messages() {
+          return this.hasMany("ChatMessage");
+        }
+      }),
+      ChatThread: this.bookshelf.model("ChatThread", {
+        tableName: "ChatThread",
+        threads() {
+          return this.belongsToMany("ChatUser").through("ThreadUser");
+        }
+      }),
+      ThreadUser: this.bookshelf.model("ThreadUser", {
+        tableName: "ThreadUser",
+        thread() {
+          return this.belongsTo("ChatThread");
         },
-        email: {
-          type: this.Sequelize.STRING(320),
-          allowNull: false,
-          comment: "user email"
+        user() {
+          return this.belongsTo("ChatUser");
+        }
+      }),
+      ChatMessage: this.bookshelf.model("ChatMessage", {
+        tableName: "ChatMessage",
+        thread() {
+          return this.belongsTo("ChatThread");
+        },
+        user() {
+          return this.belongsTo("ChatUser");
         }
       })
     };
   }
 
-  initiate() {
-    this.sequelize
-      .authenticate()
-      .then(async () => {
-        console.log("Connection established successfully.");
-        for (let model in this.schema) {
-          await this.schema[model].sync().catch(err => {
-            throw err;
-          });
-        }
-      })
-      .catch(err => {
-        console.error("Unable to connect to the database:", err);
-      });
+  async up() {
+    await this.knex.schema.hasTable("ChatUser").then(async exists => {
+      if (exists == false) {
+        await this.knex.schema.createTable("ChatUser", table => {
+          table.increments("id");
+          table.string("firstName");
+          table.string("lastName");
+          table.string("email").unique();
+        });
+      }
+    });
+
+    await this.knex.schema.hasTable("ChatThread").then(async exists => {
+      if (exists == false) {
+        await this.knex.schema.createTable("ChatThread", table => {
+          table.increments("id");
+          table.string("threadName");
+        });
+      }
+    });
+
+    await this.knex.schema.hasTable("ThreadUser").then(async exists => {
+      if (exists == false) {
+        await this.knex.schema.createTable("ThreadUser", table => {
+          table.increments("id");
+          table
+            .integer("userId")
+            .unsigned()
+            .references("id")
+            .inTable("ChatUser");
+          table
+            .integer("threadId")
+            .unsigned()
+            .references("id")
+            .inTable("ChatThread");
+        });
+      }
+    });
+
+    await this.knex.schema.hasTable("ChatMessage").then(async exists => {
+      if (exists == false) {
+        await this.knex.schema.createTable("ChatMessage", table => {
+          table.increments("id");
+          table.string("msg");
+          table.bigInteger("timeSent");
+          table
+            .integer("userId")
+            .unsigned()
+            .references("id")
+            .inTable("ChatUser");
+          table
+            .integer("threadId")
+            .unsigned()
+            .references("id")
+            .inTable("ChatThread");
+        });
+      }
+    });
+
+    return "DB_UP";
   }
 
-  async addRecord(model, data, additional) {
-    for (let prop in additional) {
-      data[prop] = additional[prop];
-    }
-    try {
-      return await model.build(data).save();
-    } catch (ex) {
-      throw ex;
-    }
+  async down() {
+    await this.knex.schema.hasTable("ChatMessage").then(async exists => {
+      if (exists == true) {
+        await this.knex.schema.dropTable("ChatMessage");
+      }
+    });
+    await this.knex.schema.hasTable("ThreadUser").then(async exists => {
+      if (exists == true) {
+        await this.knex.schema.dropTable("ThreadUser");
+      }
+    });
+    await this.knex.schema.hasTable("ChatThread").then(async exists => {
+      if (exists == true) {
+        await this.knex.schema.dropTable("ChatThread");
+      }
+    });
+    await this.knex.schema.hasTable("ChatUser").then(async exists => {
+      if (exists == true) {
+        await this.knex.schema.dropTable("ChatUser");
+      }
+    });
+    return "DB_DOWN";
   }
 
-  async findAll(model, callback) {
-    try {
-      return await model.findAll({ raw: true });
-    } catch (ex) {
-      throw ex;
-    }
+  close() {
+    this.knex.destroy();
   }
+};
 
-  async search(model, filters) {
-    try {
-      return model.findAll({ raw: true, where: filters });
-    } catch (ex) {
-      throw ex;
-    }
-  }
-
-  async update(model, filters, newData, callback) {
-    try {
-      return await model.update(newData, { where: filters });
-    } catch (ex) {
-      throw ex;
-    }
-  }
-
-  async delete(model, filters, callback) {
-    try {
-      return await model.destroy({ where: filters });
-    } catch (ex) {
-      throw ex;
-    }
-  }
-
-  shutdown() {
-    this.sequelize
-      .close()
-      .then(() => {
-        console.log("Connection closed");
-      })
-      .catch(err => {
-        console.log(err);
-      });
-  }
-}
-
-module.exports = new ORM();
-
-////////////////////////////////////Tests//////////////////////////////////
-/*
-let tempUser = new User("firstName2", "lastName2", "email2", null);
-  db.addRecord(
-    db.schema.ChatUser,
-    tempUser.getResource(),
-    { auth: "tempauth2" },
-    result => {
-      console.log(result);
-    }
-  );
-  db.update(db.schema.ChatUser, { id: 15 }, { auth: "newAuth" }, result => {
-    console.log(result);
-  });
-  db.delete(db.schema.ChatUser, { id: 15 }, result => {
-    console.log(result);
-  });
-  db.search(db.schema.ChatUser, { id: 15 }, result => {
-    console.log(result);
-  });
-*/
+module.exports = ORM;

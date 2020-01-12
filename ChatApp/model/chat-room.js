@@ -7,19 +7,19 @@ class ChatRoom {
     this.users.push(user);
   }
 
-  removerUser(user) {
+  removeUser(user) {
     this.users.splice(this.users.indexOf(user), 1);
   }
 
   getUserByName(name) {
     for (let user of this.users) {
-      if (user.name === name) return user;
+      if (user.getResource().name === name) return user;
     }
   }
 
   getUserByEmail(email) {
     for (let user of this.users) {
-      if (user.email === email) return user;
+      if (user.getResource().email === email) return user;
     }
   }
 
@@ -28,6 +28,12 @@ class ChatRoom {
       if (user.socket === socket) return user;
     }
   }
+
+  getUserByAuth(auth) {
+    for (let user of this.users) {
+      if (auth.indexOf(user.auth) !== -1) return user;
+    }
+  };
 }
 
-module.exports = ChatRoom;
+module.exports = new ChatRoom();
