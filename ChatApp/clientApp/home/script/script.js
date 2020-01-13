@@ -1,4 +1,4 @@
-$(document).ready(function () {
+$(document).ready(function() {
   let loadedUpto = 0;
   let me;
   jQuery.get("/get-user").then(user => {
@@ -8,36 +8,42 @@ $(document).ready(function () {
 
   var socket = io();
 
-  socket.on("in-message", function (name, msg) {
+  socket.on("in-message", function(name, msg) {
     $(".conversation").prepend(
       "<p class='message-in'>" + name + ": " + msg + "</p>"
     );
   });
 
-  socket.on("joined", function () {
-    jQuery.get("/messages", {
-      upTo: loadedUpto
-    }).then(data => {
-      for (let message of data.messages) {
-        if (message.sentBy.email == me.email) {
-          $(".conversation").append(
-            "<p class='message-out'>me" + ": " + message.msg + "</p>"
-          );
-        } else {
-          $(".conversation").append(
-            "<p class='message-in'>" + message.sentBy.firstName + ": " + message.msg + "</p>"
-          );
+  socket.on("joined", function() {
+    jQuery
+      .get("/messages", {
+        upTo: loadedUpto
+      })
+      .then(data => {
+        for (let message of data.messages) {
+          if (message.sentBy.email == me.email) {
+            $(".conversation").append(
+              "<p class='message-out'>me" + ": " + message.msg + "</p>"
+            );
+          } else {
+            $(".conversation").append(
+              "<p class='message-in'>" +
+                message.sentBy.firstName +
+                ": " +
+                message.msg +
+                "</p>"
+            );
+          }
         }
-      }
-      loadedUpto = data.hasUpto;
-    });
-  })
+        loadedUpto = data.hasUpto;
+      });
+  });
 
-  socket.on("error", function (error) {
+  socket.on("error", function(error) {
     alert(error);
-  })
+  });
 
-  $("#btn-send").click(function (event) {
+  $("#btn-send").click(function(event) {
     let msg = $("#txt-msg").val();
     if (msg.length > 0) {
       socket.emit("out-message", msg);
@@ -45,25 +51,33 @@ $(document).ready(function () {
         "<p class='message-out'>me" + ": " + msg + "</p>"
       );
     }
-    $("#txt-msg").val('');
+    $("#txt-msg").val("");
   });
 
-  /* $(".conversation").scroll(function (event) {
-    jQuery.get("/messages", {
-      upTo: loadedUpto
-    }).then(data => {
-      for (let message of data.messages) {
-        if (message.sentBy.email == me.email) {
-          $(".conversation").prepend(
-            "<p class='message-out'>me" + ": " + message.msg + "</p>"
-          );
-        } else {
-          $(".conversation").prepend(
-            "<p class='message-in'>" + message.sentBy.firstName + ": " + message.msg + "</p>"
-          );
-        }
-      }
-      loadedUpto = data.hasUpto;
-    });
-  }); */
+  $(".conversation").scroll(function(event) {
+    if ($(".conversation").scrollTop() == 0) {
+      jQuery
+        .get("/messages", {
+          upTo: loadedUpto
+        })
+        .then(data => {
+          for (let message of data.messages) {
+            if (message.sentBy.email == me.email) {
+              $(".conversation").append(
+                "<p class='message-out'>me" + ": " + message.msg + "</p>"
+              );
+            } else {
+              $(".conversation").append(
+                "<p class='message-in'>" +
+                  message.sentBy.firstName +
+                  ": " +
+                  message.msg +
+                  "</p>"
+              );
+            }
+          }
+          loadedUpto = data.hasUpto;
+        });
+    }
+  });
 });
