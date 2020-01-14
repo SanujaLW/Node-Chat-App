@@ -2,7 +2,7 @@ class ORM {
   constructor() {
     this.knex = require("knex")({
       client: "mysql",
-      connection: "mysql://hx0PbWTsGR:2rP1JveNmZ@remotemysql.com:3306/hx0PbWTsGR"
+      connection: process.env.MYSQL_CONNECTION_STR
     });
 
     this.bookshelf = require("bookshelf")(this.knex);
@@ -133,6 +133,6 @@ class ORM {
   close() {
     this.knex.destroy();
   }
-};
+}
 
 module.exports = ORM;

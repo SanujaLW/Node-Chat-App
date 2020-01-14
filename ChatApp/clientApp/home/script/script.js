@@ -1,4 +1,5 @@
 $(document).ready(function() {
+  let isLoadingMessages = false;
   let loadedUpto = 0;
   let me;
   jQuery.get("/get-user").then(user => {
@@ -6,7 +7,7 @@ $(document).ready(function() {
     $(".username").html(user.firstName + " " + user.lastName);
   });
 
-  var socket = io();
+  let socket = io();
 
   socket.on("in-message", function(name, msg) {
     $(".conversation").prepend(
@@ -55,7 +56,8 @@ $(document).ready(function() {
   });
 
   $(".conversation").scroll(function(event) {
-    if ($(".conversation").scrollTop() == 0) {
+    if ($(".conversation").scrollTop() == 0 && isLoadingMessages == false) {
+      isLoadingMessages = true;
       jQuery
         .get("/messages", {
           upTo: loadedUpto
@@ -77,6 +79,7 @@ $(document).ready(function() {
             }
           }
           loadedUpto = data.hasUpto;
+          isLoadingMessages = false;
         });
     }
   });
